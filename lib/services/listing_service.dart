@@ -9,10 +9,13 @@ class ListingService {
   Stream<List<ListingModel>> getListingsStream() {
     return _firestore
         .collection(_collection)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+          final listings = snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList();
+          // Sort in Dart to avoid index requirements
+          listings.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return listings;
+        });
   }
 
   // Get user's listings stream
@@ -20,10 +23,13 @@ class ListingService {
     return _firestore
         .collection(_collection)
         .where('createdBy', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+          final listings = snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList();
+          // Sort in Dart instead of Firestore to avoid composite index
+          listings.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return listings;
+        });
   }
 
   // Get listings by category stream
@@ -31,10 +37,13 @@ class ListingService {
     return _firestore
         .collection(_collection)
         .where('category', isEqualTo: category.name)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList());
+        .map((snapshot) {
+          final listings = snapshot.docs.map((doc) => ListingModel.fromFirestore(doc)).toList();
+          // Sort in Dart instead of Firestore to avoid composite index
+          listings.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          return listings;
+        });
   }
 
   // Get single listing

@@ -18,6 +18,7 @@ class CategoryFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilterChip(
       selected: isSelected,
+      showCheckmark: false,
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -29,21 +30,16 @@ class CategoryFilterChip extends StatelessWidget {
         ],
       ),
       onSelected: (_) => onSelected(),
-      selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-      checkmarkColor: Theme.of(context).primaryColor,
+      selectedColor: Colors.white,
       labelStyle: TextStyle(
-        color: isSelected
-            ? Theme.of(context).primaryColor
-            : Colors.grey[700],
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        color: isSelected ? const Color(0xFF1A237E) : Colors.white,
+        fontWeight: FontWeight.w500,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF3949AB),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isSelected
-              ? Theme.of(context).primaryColor
-              : Colors.grey[300]!,
+          color: isSelected ? Colors.white : Colors.transparent,
         ),
       ),
     );

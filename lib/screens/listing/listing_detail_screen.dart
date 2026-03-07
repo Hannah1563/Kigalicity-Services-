@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/listing_model.dart';
 import '../../providers/listing_provider.dart';
@@ -15,12 +16,35 @@ class ListingDetailScreen extends ConsumerWidget {
     required this.listingId,
   });
 
-  Future<void> _launchNavigation(double lat, double lng) async {
-    final url = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving',
+  Future<void> _launchNavigation(BuildContext context, double lat, double lng, String placeName) async {
+    // Use directions URL that shows route overview with both start & destination visible
+    // This shows the full route before starting turn-by-turn navigation
+    final directionsUrl = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&destination_place_id=&travelmode=driving',
     );
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+
+    try {
+      final launched = await launchUrl(directionsUrl, mode: LaunchMode.externalApplication);
+      if (launched) return;
+    } catch (_) {
+      // Try fallback
+    }
+
+    // Fallback: Show the place on map
+    try {
+      await launchUrl(
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng'),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Location: $placeName ($lat, $lng)'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
     }
   }
 
@@ -56,25 +80,49 @@ class ListingDetailScreen extends ConsumerWidget {
               SliverAppBar(
                 expandedHeight: 250,
                 pinned: true,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(listing.latitude, listing.longitude),
-                      zoom: 15,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
                     ),
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId('listing'),
-                        position: LatLng(listing.latitude, listing.longitude),
-                        infoWindow: InfoWindow(title: listing.name),
+                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                flexibleSpace: FlexibleSpaceBar(
+                  background: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(listing.latitude, listing.longitude),
+                      initialZoom: 15,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.none,
                       ),
-                    },
-                    zoomControlsEnabled: false,
-                    scrollGesturesEnabled: false,
-                    rotateGesturesEnabled: false,
-                    tiltGesturesEnabled: false,
-                    myLocationButtonEnabled: false,
-                    mapToolbarEnabled: false,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.kigali_city_services',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(listing.latitude, listing.longitude),
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 actions: [
@@ -271,8 +319,10 @@ class ListingDetailScreen extends ConsumerWidget {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _launchNavigation(
+              context,
               listing.latitude,
               listing.longitude,
+              listing.name,
             ),
             icon: const Icon(Icons.directions),
             label: const Text('Get Directions'),

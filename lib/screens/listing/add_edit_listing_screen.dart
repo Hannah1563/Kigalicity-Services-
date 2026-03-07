@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../models/listing_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/listing_provider.dart';
@@ -30,7 +31,7 @@ class _AddEditListingScreenState extends ConsumerState<AddEditListingScreen> {
   ListingCategory _selectedCategory = ListingCategory.restaurant;
   bool _isLoading = false;
   bool _isGettingLocation = false;
-  GoogleMapController? _mapController;
+  MapController? _mapController;
   LatLng? _selectedLocation;
 
   bool get _isEditing => widget.listing != null;
@@ -70,6 +71,26 @@ class _AddEditListingScreenState extends ConsumerState<AddEditListingScreen> {
     super.dispose();
   }
 
+  // Check if coordinates are within Rwanda bounds
+  bool _isInRwanda(double lat, double lng) {
+    // Rwanda approximate bounds: Lat -2.8 to -1.0, Lng 28.8 to 30.9
+    return lat >= -2.9 && lat <= -1.0 && lng >= 28.8 && lng <= 30.9;
+  }
+
+  void _useKigaliDefault() {
+    // Kigali city center coordinates
+    const kigaliLat = -1.9403;
+    const kigaliLng = 29.8739;
+    
+    setState(() {
+      _latitudeController.text = kigaliLat.toString();
+      _longitudeController.text = kigaliLng.toString();
+      _selectedLocation = const LatLng(kigaliLat, kigaliLng);
+    });
+    
+    _mapController?.move(const LatLng(kigaliLat, kigaliLng), 14);
+  }
+
   Future<void> _getCurrentLocation() async {
     setState(() => _isGettingLocation = true);
 
@@ -94,19 +115,49 @@ class _AddEditListingScreenState extends ConsumerState<AddEditListingScreen> {
         ),
       );
 
-      setState(() {
-        _latitudeController.text = position.latitude.toString();
-        _longitudeController.text = position.longitude.toString();
-        _selectedLocation = LatLng(position.latitude, position.longitude);
-      });
+      // Check if location is in Rwanda
+      if (!_isInRwanda(position.latitude, position.longitude)) {
+        if (mounted) {
+          // Show dialog asking to use Kigali default
+          final useKigali = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Location Outside Rwanda'),
+              content: const Text(
+                'Your current GPS location is outside Kigali/Rwanda. '
+                'Would you like to use Kigali city center instead?\n\n'
+                'Or use "Pick on Map" to select a specific location in Kigali.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Use Kigali Center'),
+                ),
+              ],
+            ),
+          );
+          
+          if (useKigali == true) {
+            _useKigaliDefault();
+          }
+        }
+      } else {
+        setState(() {
+          _latitudeController.text = position.latitude.toString();
+          _longitudeController.text = position.longitude.toString();
+          _selectedLocation = LatLng(position.latitude, position.longitude);
+        });
 
-      // Move map to current location
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(
+        // Move map to current location
+        _mapController?.move(
           LatLng(position.latitude, position.longitude),
           16,
-        ),
-      );
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -229,29 +280,43 @@ class _AddEditListingScreenState extends ConsumerState<AddEditListingScreen> {
               ),
             ),
             Expanded(
-              child: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: initialPosition,
-                  zoom: 14,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: initialPosition,
+                  initialZoom: 14,
+                  onTap: (tapPosition, latLng) {
+                    setState(() {
+                      _selectedLocation = latLng;
+                      _latitudeController.text = latLng.latitude.toString();
+                      _longitudeController.text = latLng.longitude.toString();
+                    });
+                    Navigator.pop(context);
+                  },
                 ),
-                markers: _selectedLocation != null
-                    ? {
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.kigali_city_services',
+                  ),
+                  if (_selectedLocation != null)
+                    MarkerLayer(
+                      markers: [
                         Marker(
-                          markerId: const MarkerId('selected'),
-                          position: _selectedLocation!,
+                          point: _selectedLocation!,
+                          width: 40,
+                          height: 40,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                          ),
                         ),
-                      }
-                    : {},
-                onTap: (latLng) {
-                  setState(() {
-                    _selectedLocation = latLng;
-                    _latitudeController.text = latLng.latitude.toString();
-                    _longitudeController.text = latLng.longitude.toString();
-                  });
-                  Navigator.pop(context);
-                },
-                myLocationEnabled: true,
-                myLocationButtonEnabled: true,
+                      ],
+                    ),
+                ],
               ),
             ),
           ],

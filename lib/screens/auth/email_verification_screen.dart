@@ -34,11 +34,7 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
     // Check every 3 seconds if email is verified
     _checkTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       await ref.read(authNotifierProvider.notifier).reloadUser();
-      final isVerified = ref.read(authNotifierProvider.notifier).isEmailVerified;
-      if (isVerified && mounted) {
-        _checkTimer?.cancel();
-        // Navigation will be handled by auth state listener
-      }
+      // State updated in reloadUser, AuthWrapper will rebuild automatically
     });
   }
 
@@ -95,10 +91,18 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
       await ref.read(authNotifierProvider.notifier).reloadUser();
       final isVerified = ref.read(authNotifierProvider.notifier).isEmailVerified;
       
-      if (!isVerified && mounted) {
+      if (isVerified && mounted) {
+        // State updated in reloadUser, AuthWrapper will rebuild and navigate automatically
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Email not verified yet. Please check your inbox.'),
+            content: Text('Email verified! Welcome to Kigali City Services!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Email not verified yet. Please check your inbox and spam folder.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -184,7 +188,52 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
                     ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
+              // Important notice about spam folder
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.amber.shade200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.amber.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Can\'t find the email?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber.shade800,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '• Check your Spam or Junk folder\n• Make sure your email address is correct\n• Wait a few minutes and try resending',
+                            style: TextStyle(
+                              color: Colors.amber.shade900,
+                              fontSize: 12,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
               // Check Verification Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _checkVerification,

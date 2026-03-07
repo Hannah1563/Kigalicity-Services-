@@ -29,21 +29,51 @@ class _DirectoryScreenState extends ConsumerState<DirectoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kigali Directory'),
+        title: const Text('Kigali City'),
         elevation: 0,
       ),
       body: Column(
         children: [
-          // Search Bar
+          // Search Bar and Filters
           Container(
+            color: Theme.of(context).appBarTheme.backgroundColor,
             padding: const EdgeInsets.all(16),
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             child: Column(
               children: [
+                // Category Filters
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      CategoryFilterChip(
+                        label: 'All',
+                        isSelected: selectedCategory == null,
+                        onSelected: () {
+                          ref.read(selectedCategoryProvider.notifier).set(null);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      ...ListingCategory.values.map((category) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: CategoryFilterChip(
+                            label: category.displayName,
+                            isSelected: selectedCategory == category,
+                            onSelected: () {
+                              ref.read(selectedCategoryProvider.notifier).set(category);
+                            },
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Search Bar
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search places and services...',
+                    hintText: 'Search for a service',
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -65,72 +95,58 @@ class _DirectoryScreenState extends ConsumerState<DirectoryScreen> {
                     ref.read(searchQueryProvider.notifier).set(value);
                   },
                 ),
-                const SizedBox(height: 12),
-                // Category Filters
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      CategoryFilterChip(
-                        label: 'All',
-                        isSelected: selectedCategory == null,
-                        onSelected: () {
-                          ref.read(selectedCategoryProvider.notifier).set(null);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      ...ListingCategory.values.map((category) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: CategoryFilterChip(
-                            label: category.displayName,
-                            icon: category.icon,
-                            isSelected: selectedCategory == category,
-                            onSelected: () {
-                              ref.read(selectedCategoryProvider.notifier).set(category);
-                            },
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
               ],
+            ),
+          ),
+          // Section Title
+          Container(
+            color: Colors.grey[100],
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            width: double.infinity,
+            child: Text(
+              selectedCategory?.displayName ?? 'Near You',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[800],
+              ),
             ),
           ),
           // Listings
           Expanded(
-            child: filteredListings.when(
-              data: (listings) {
-                if (listings.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No listings found',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
+            child: Container(
+              color: Colors.grey[100],
+              child: filteredListings.when(
+                data: (listings) {
+                  if (listings.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: Colors.grey[400],
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Try adjusting your search or filters',
-                          style: TextStyle(
-                            color: Colors.grey[500],
+                          const SizedBox(height: 16),
+                          Text(
+                            'No listings found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[700],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try adjusting your search or filters',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -175,7 +191,7 @@ class _DirectoryScreenState extends ConsumerState<DirectoryScreen> {
                       'Error loading listings',
                       style: TextStyle(
                         fontSize: 18,
-                        color: Colors.grey[600],
+                        color: Colors.grey[700],
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -188,6 +204,7 @@ class _DirectoryScreenState extends ConsumerState<DirectoryScreen> {
                   ],
                 ),
               ),
+            ),
             ),
           ),
         ],

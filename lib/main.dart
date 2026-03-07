@@ -10,9 +10,14 @@ import 'screens/home_shell.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Initialize Firebase (handle already initialized case for hot restart)
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Firebase already initialized, ignore
+  }
   
   runApp(
     const ProviderScope(
@@ -26,28 +31,127 @@ class KigaliCityServicesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Theme matching the mockup design - blue header, white content, yellow accent
+    const primaryBlue = Color(0xFF4A90A4);  // Teal-blue from mockup
+    const accentYellow = Color(0xFFFFB800);  // Yellow/gold for selected nav
+    
     return MaterialApp(
       title: 'Kigali City Services',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E88E5), // Blue theme
-          brightness: Brightness.light,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.grey[100],
+        colorScheme: ColorScheme.light(
+          primary: primaryBlue,
+          secondary: accentYellow,
+          surface: Colors.white,
+          onPrimary: Colors.white,
+          onSecondary: Colors.black,
+          onSurface: Colors.black87,
         ),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
         ),
         cardTheme: CardThemeData(
           elevation: 2,
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: accentYellow,
+          unselectedItemColor: Colors.grey,
+          type: BottomNavigationBarType.fixed,
+          elevation: 8,
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: Colors.white,
+          labelStyle: const TextStyle(color: primaryBlue),
+          selectedColor: primaryBlue,
+          secondarySelectedColor: primaryBlue,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: primaryBlue),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          prefixIconColor: Colors.grey[600],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: primaryBlue, width: 2),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white,
-            backgroundColor: const Color(0xFF1E88E5),
+            backgroundColor: primaryBlue,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: primaryBlue,
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: primaryBlue,
+            side: const BorderSide(color: primaryBlue),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: primaryBlue,
+          foregroundColor: Colors.white,
+        ),
+        listTileTheme: const ListTileThemeData(
+          textColor: Colors.black87,
+          iconColor: Colors.grey,
+        ),
+        switchTheme: SwitchThemeData(
+          thumbColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return primaryBlue;
+            }
+            return Colors.grey;
+          }),
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return primaryBlue.withValues(alpha: 0.5);
+            }
+            return Colors.grey.withValues(alpha: 0.3);
+          }),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: Colors.grey[800],
+          contentTextStyle: const TextStyle(color: Colors.white),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -61,7 +165,8 @@ class AuthWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
+    // Use authNotifierProvider instead of authStateProvider for reactive updates
+    final authState = ref.watch(authNotifierProvider);
 
     return authState.when(
       data: (user) {
@@ -96,7 +201,7 @@ class AuthWrapper extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  ref.invalidate(authStateProvider);
+                  ref.invalidate(authNotifierProvider);
                 },
                 child: const Text('Retry'),
               ),

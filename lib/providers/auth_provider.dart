@@ -68,9 +68,12 @@ class AuthNotifier extends Notifier<AsyncValue<User?>> {
     state = const AsyncValue.loading();
     try {
       await _authService.signIn(email: email, password: password);
+      // Force reload to get latest user state including emailVerified
+      await _authService.reloadUser();
       state = AsyncValue.data(_authService.currentUser);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      // On error, revert to null user (not logged in) so user can retry
+      state = const AsyncValue.data(null);
       rethrow;
     }
   }

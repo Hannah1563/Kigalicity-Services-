@@ -17,38 +17,38 @@ class ListingCard extends StatelessWidget {
     this.showActions = false,
   });
 
+  // Generate a deterministic rating based on the listing name (for demo purposes)
+  double get _rating {
+    final hash = listing.name.hashCode.abs() % 20;
+    return 3.5 + (hash / 20) * 1.5; // Rating between 3.5 and 5.0
+  }
+
+  // Generate a deterministic distance based on the listing name (for demo purposes)
+  String get _distance {
+    final hash = listing.name.hashCode.abs() % 30;
+    final distance = 0.3 + (hash / 10);
+    return '${distance.toStringAsFixed(1)} km';
+  }
+
   @override
   Widget build(BuildContext context) {
+    const darkBlue = Color(0xFF283593);
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: darkBlue,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      elevation: 2,
+      elevation: 4,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Category Icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    listing.category.icon,
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
               // Content
               Expanded(
                 child: Column(
@@ -60,67 +60,33 @@ class ListingCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    // Category
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        listing.category.displayName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Address
+                    const SizedBox(height: 6),
+                    // Rating
                     Row(
                       children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            listing.address,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // Contact
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.phone_outlined,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
+                        ...List.generate(5, (index) {
+                          return Icon(
+                            index < _rating.floor() 
+                                ? Icons.star
+                                : index < _rating 
+                                    ? Icons.star_half
+                                    : Icons.star_border,
+                            color: Colors.amber,
+                            size: 16,
+                          );
+                        }),
+                        const SizedBox(width: 6),
                         Text(
-                          listing.contactNumber,
+                          _rating.toStringAsFixed(1),
                           style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -128,9 +94,11 @@ class ListingCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Actions
+              const SizedBox(width: 12),
+              // Distance or Actions
               if (showActions)
-                Column(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit_outlined),
@@ -138,23 +106,26 @@ class ListingCard extends StatelessWidget {
                       iconSize: 20,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      color: Theme.of(context).primaryColor,
+                      color: Colors.white,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 12),
                     IconButton(
                       icon: const Icon(Icons.delete_outline),
                       onPressed: onDelete,
                       iconSize: 20,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      color: Colors.red,
+                      color: Colors.red[300],
                     ),
                   ],
                 )
               else
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
+                Text(
+                  _distance,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
                 ),
             ],
           ),
