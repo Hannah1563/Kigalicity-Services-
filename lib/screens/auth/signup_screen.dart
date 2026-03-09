@@ -37,10 +37,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     try {
       await ref.read(authNotifierProvider.notifier).signUp(
-            email: _emailController.text.trim(),
-            password: _passwordController.text,
-            displayName: _nameController.text.trim(),
-          );
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        displayName: _nameController.text.trim(),
+      );
+      // Force reload to get updated user state (especially emailVerified)
+      await ref.read(authNotifierProvider.notifier).reloadUser();
 
       if (mounted) {
         Navigator.of(context).pushReplacement(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -31,79 +32,76 @@ class KigaliCityServicesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Theme matching the mockup design - blue header, white content, yellow accent
-    const primaryBlue = Color(0xFF4A90A4);  // Teal-blue from mockup
-    const accentYellow = Color(0xFFFFB800);  // Yellow/gold for selected nav
-    
+    // Theme matching the mockup design - deep blue header/nav, white content, yellow accent
     return MaterialApp(
       title: 'Kigali City Services',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.grey[100],
+        scaffoldBackgroundColor: AppColors.primaryBlue,
         colorScheme: ColorScheme.light(
-          primary: primaryBlue,
-          secondary: accentYellow,
-          surface: Colors.white,
-          onPrimary: Colors.white,
-          onSecondary: Colors.black,
-          onSurface: Colors.black87,
+          primary: AppColors.primaryBlue,
+          secondary: AppColors.accentYellow,
+          surface: AppColors.cardWhite,
+          onPrimary: AppColors.cardWhite,
+          onSecondary: AppColors.textDark,
+          onSurface: AppColors.textDark,
         ),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
-          backgroundColor: primaryBlue,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.primaryBlue,
+          foregroundColor: AppColors.cardWhite,
           elevation: 0,
         ),
         cardTheme: CardThemeData(
           elevation: 2,
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: AppColors.cardWhite,
+          surfaceTintColor: AppColors.cardWhite,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: accentYellow,
-          unselectedItemColor: Colors.grey,
+          backgroundColor: AppColors.primaryBlue,
+          selectedItemColor: AppColors.accentYellow,
+          unselectedItemColor: AppColors.navUnselected,
           type: BottomNavigationBarType.fixed,
           elevation: 8,
         ),
         chipTheme: ChipThemeData(
-          backgroundColor: Colors.white,
-          labelStyle: const TextStyle(color: primaryBlue),
-          selectedColor: primaryBlue,
-          secondarySelectedColor: primaryBlue,
+          backgroundColor: AppColors.cardWhite,
+          labelStyle: const TextStyle(color: AppColors.primaryBlue),
+          selectedColor: AppColors.primaryBlue,
+          secondarySelectedColor: AppColors.primaryBlue,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: primaryBlue),
+            side: const BorderSide(color: AppColors.primaryBlue),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
-          hintStyle: TextStyle(color: Colors.grey[500]),
-          prefixIconColor: Colors.grey[600],
+          fillColor: AppColors.cardWhite,
+          hintStyle: TextStyle(color: AppColors.navUnselected),
+          prefixIconColor: AppColors.navUnselected,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderSide: BorderSide(color: AppColors.navUnselected),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderSide: BorderSide(color: AppColors.navUnselected),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primaryBlue, width: 2),
+            borderSide: const BorderSide(color: AppColors.primaryBlue, width: 2),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: primaryBlue,
+            foregroundColor: AppColors.cardWhite,
+            backgroundColor: AppColors.primaryBlue,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -112,13 +110,13 @@ class KigaliCityServicesApp extends StatelessWidget {
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            foregroundColor: primaryBlue,
+            foregroundColor: AppColors.primaryBlue,
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: primaryBlue,
-            side: const BorderSide(color: primaryBlue),
+            foregroundColor: AppColors.primaryBlue,
+            side: const BorderSide(color: AppColors.primaryBlue),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -126,30 +124,30 @@ class KigaliCityServicesApp extends StatelessWidget {
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: primaryBlue,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.primaryBlue,
+          foregroundColor: AppColors.cardWhite,
         ),
         listTileTheme: const ListTileThemeData(
-          textColor: Colors.black87,
-          iconColor: Colors.grey,
+          textColor: AppColors.textDark,
+          iconColor: AppColors.navUnselected,
         ),
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return primaryBlue;
+              return AppColors.accentYellow;
             }
-            return Colors.grey;
+            return AppColors.navUnselected;
           }),
           trackColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return primaryBlue.withValues(alpha: 0.5);
+              return AppColors.accentYellow.withOpacity(0.5);
             }
-            return Colors.grey.withValues(alpha: 0.3);
+            return AppColors.navUnselected.withOpacity(0.3);
           }),
         ),
         snackBarTheme: SnackBarThemeData(
-          backgroundColor: Colors.grey[800],
-          contentTextStyle: const TextStyle(color: Colors.white),
+          backgroundColor: AppColors.primaryBlue,
+          contentTextStyle: const TextStyle(color: AppColors.cardWhite),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -170,45 +168,54 @@ class AuthWrapper extends ConsumerWidget {
 
     return authState.when(
       data: (user) {
+        debugPrint('AuthWrapper: user = '
+            '${user?.uid ?? 'null'}, emailVerified = ${user?.emailVerified ?? 'null'}');
         if (user == null) {
+          debugPrint('AuthWrapper: Showing LoginScreen');
           return const LoginScreen();
         }
-        
         // Check email verification
         if (!user.emailVerified) {
+          debugPrint('AuthWrapper: Showing EmailVerificationScreen');
           return const EmailVerificationScreen();
         }
-        
+        debugPrint('AuthWrapper: Showing HomeShell');
         return const HomeShell();
       },
-      loading: () => const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-      error: (error, stack) => Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red,
-              ),
-              const SizedBox(height: 16),
-              Text('Error: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  ref.invalidate(authNotifierProvider);
-                },
-                child: const Text('Retry'),
-              ),
-            ],
+      loading: () {
+        debugPrint('AuthWrapper: Loading...');
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
           ),
-        ),
-      ),
+        );
+      },
+      error: (error, stack) {
+        debugPrint('AuthWrapper: Error: $error');
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                Text('Error: $error'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    ref.invalidate(authNotifierProvider);
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
