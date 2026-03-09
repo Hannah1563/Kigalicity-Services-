@@ -208,7 +208,10 @@ service cloud.firestore {
 
 ## License
 
-This project is created for educational purposes as part of a mobile development course assignment.
+
+Github repo:https: //github.com/Hannah1563/Kigalicity-Services-.git
+Demo video: https: //youtu.be/jWopDNakx_c?si=ovLKQzN-yAbgwNRw
+Document link:https://docs.google.com/document/d/1ISdW8zGwArqa6yDfHfHXubHGwKyn3KQDvBwR8BnMN_E/edit?usp=sharing
 
 **Submission Date:** March 9, 2026  
 **Author:** Hannah ISHIMWETuyishimire  
