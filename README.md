@@ -211,5 +211,5 @@ service cloud.firestore {
 This project is created for educational purposes as part of a mobile development course assignment.
 
 **Submission Date:** March 9, 2026  
-**Author:** Jean Baptiste Tuyishimire  
+**Author:** Hannah ISHIMWETuyishimire  
 **Course:** Mobile Application Development
