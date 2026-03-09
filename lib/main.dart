@@ -1,3 +1,4 @@
+// ...existing code...
 import 'package:flutter/material.dart';
 import 'theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -163,9 +164,7 @@ class AuthWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Use authNotifierProvider instead of authStateProvider for reactive updates
     final authState = ref.watch(authNotifierProvider);
-
     return authState.when(
       data: (user) {
         debugPrint('AuthWrapper: user = '
@@ -174,7 +173,6 @@ class AuthWrapper extends ConsumerWidget {
           debugPrint('AuthWrapper: Showing LoginScreen');
           return const LoginScreen();
         }
-        // Check email verification
         if (!user.emailVerified) {
           debugPrint('AuthWrapper: Showing EmailVerificationScreen');
           return const EmailVerificationScreen();

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
+import '../home_shell.dart';
 
 class EmailVerificationScreen extends ConsumerStatefulWidget {
   const EmailVerificationScreen({super.key});
@@ -90,14 +91,18 @@ class _EmailVerificationScreenState extends ConsumerState<EmailVerificationScree
     try {
       await ref.read(authNotifierProvider.notifier).reloadUser();
       final isVerified = ref.read(authNotifierProvider.notifier).isEmailVerified;
-      
+
       if (isVerified && mounted) {
-        // State updated in reloadUser, AuthWrapper will rebuild and navigate automatically
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Email verified! Welcome to Kigali City Services!'),
             backgroundColor: Colors.green,
           ),
+        );
+        // Force navigation to HomeShell
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeShell()),
+          (route) => false,
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
