@@ -202,6 +202,8 @@ service cloud.firestore {
 
 ## Screenshots
 
+![App Screenshot](assets/app_screenshot.png)
+
 (Add screenshots of your app here)
 
 ## License
